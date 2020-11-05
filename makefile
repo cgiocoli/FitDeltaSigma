@@ -25,7 +25,7 @@ ifeq ($(SYS),Darwin)
 endif
 
 fit_DeltaSigma-2.2: $(OBJ) 
-	$(CXX) $(OBJ) -o fit_DeltaSigma-2.2_WMAP9 $(FLAGS_LIB)  $(FLAGS_INC)
+	$(CXX) $(OBJ) -o fit_DeltaSigma-2.2_1h_gamma $(FLAGS_LIB)  $(FLAGS_INC)
 
 clean:
 	rm -f *.o fit_DeltaSigma-2.2 *~ \#* temp* core*

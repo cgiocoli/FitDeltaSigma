@@ -1,0 +1,34 @@
+!...INPUT_FILE
+/Users/cgiocoli/data/300th/snap_119/maps_xxxx_119_1.fits_profiles_ng29.txt
+!...COVARIANCE_FILE
+NO
+!...REDSHIFT_BIN
+-1
+!...AMPLITUDE_BIN
+0
+!...rmin
+0.01
+!...r_t
+3.0
+!...iseed_inwalkers_ichain_size
+12345    32    10000
+!...OUTPUT_DIR
+300th_xxxx_119_1_1h
+!...Npars
+4
+!...A_logM200
+15.0
+!...B_c200
+4.0
+!...C_f_off
+0.025
+!...D_sigma_off
+0.025
+!...ranges_A
+14   16
+!...ranges_B
+1  10
+!...ranges_C
+0   0.05
+!...ranges_C
+0   0.05
