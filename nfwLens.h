@@ -10,7 +10,7 @@
 // Class defining a truncated NFW lens
 // (Baltz, Marshall & Oguri, 2009)
 // + mis-centering term (Sereno, Veropalumbo et al. 2016)
-// + 2-halo term (from Mauro S. tables)
+// + 2-halo term 
 class nfwLens
 {
  private:
@@ -38,6 +38,8 @@ class nfwLens
   bool use_2halo; // true if 2-halo term is used
   double bias;
 
+  std:: string method_bias;
+
   // std::vector<double> gamma_arr;
   // std::string bias_file = "/home/lorenzo/KIDS/cluster_wl_lib/data_halo_bias_TI+10_LCDM.dat";
   // std::string gamma_file = "/home/lorenzo/KIDS/cluster_wl_lib/data_2-halo_gamma_t_LCDM.dat";
@@ -50,7 +52,7 @@ class nfwLens
  public:  
   nfwLens(cbl:: cosmology:: Cosmology* _cosmo, const double& _redshift, const double& _m200,
 	  const double& _conc, const double& trunc_fact, const double& _mis_frac = 0.,
-	  const double& _mis_scale = 0., const bool& _use_2halo = false);
+	  const double& _mis_scale = 0., const bool& _use_2halo = false, const std:: string& _method_bias="Tinker");
   double deltasigma(const double& rad); 
   double deltasigma_1h(const double& rad);
   double deltasigma_1h_mis(const double& rad);

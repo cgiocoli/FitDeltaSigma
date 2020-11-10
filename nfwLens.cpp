@@ -4,7 +4,7 @@
 
 // properties of the linear matter power spectrum.............
 std:: string method_Pk = "EisensteinHu";
-std:: string method_bias = "Tinker";
+// std:: string method_bias = "Tinker";
 const bool do_nonlinear = false;
 // const double zs = 1.5;
 //............................................................
@@ -27,9 +27,10 @@ nfwLens:: nfwLens(cbl:: cosmology:: Cosmology* _cosmo,
 		  const double& _trunc_fact_,
 		  const double& _mis_frac,
 		  const double& _mis_scale,
-		  const bool& _use_2halo)
+		  const bool& _use_2halo,
+		  const std:: string& _method_bias)
   : cosmo(_cosmo), redshift(_redshift), m200(_m200), conc(_conc), trunc_fact(_trunc_fact_),
-    mis_frac(_mis_frac), mis_scale(_mis_scale), use_2halo(_use_2halo){
+    mis_frac(_mis_frac), mis_scale(_mis_scale), use_2halo(_use_2halo), method_bias(_method_bias){
   
   // calcualte r200 for given mass and cosmology
   double H = cosmo->HH(redshift)/cosmo->HH(0.)*100./3.0857e+19; // in sec^-1
