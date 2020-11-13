@@ -437,7 +437,7 @@ int main () {
     ingal_in_bin.open(fngal_in_bin.c_str());
     if(ingal_in_bin.is_open()){
       std:: cout << " ngals_in_bin.txt exists I will read it! " << std:: endl;
-      ifprec >> min_ngal_in_bin;
+      ingal_in_bin >> min_ngal_in_bin;
       std:: cout << " new min_ngal_in_bin value = " << min_ngal_in_bin << std:: endl;
       ingal_in_bin.close();
     }
@@ -824,7 +824,7 @@ int main () {
 	posterior.write_results(cbl::par::DirLoc+outputdir+"/", "chains_linear_relation", burn_in, thin);
 	
 	// store the best-fit model
-	posterior.write_model_from_chain(cbl::par::DirLoc+outputdir+"/", "model_from_chain.dat", {}, {}, burn_in, thin);
+	// posterior.write_model_from_chain(cbl::par::DirLoc+outputdir+"/", "model_from_chain.dat", {}, {}, burn_in, thin);
       }else{
 	
 	std:: cout << "  " << std:: endl;
@@ -859,7 +859,7 @@ int main () {
 	posterior.write_results(cbl::par::DirLoc+outputdir+"/", "chains_linear_relation", burn_in, thin);
 	
 	// store the best-fit model
-	posterior.write_model_from_chain(cbl::par::DirLoc+outputdir+"/", "model_from_chain.dat", {}, {}, burn_in, thin);
+	// posterior.write_model_from_chain(cbl::par::DirLoc+outputdir+"/", "model_from_chain.dat", {}, {}, burn_in, thin);
       }
     }
     if(npars == 4){
