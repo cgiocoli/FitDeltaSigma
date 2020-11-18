@@ -9,6 +9,52 @@
 #include "TaperedCovarianceMatrix.h"
 #include <numeric>
 
+template <class T>
+int locate (const std::vector<T> &v, const T x){
+  size_t n = v.size ();
+  int jl = -1;
+  int ju = n;
+  bool as = (v[n-1] >= v[0]);
+  while (ju-jl > 1){
+    int jm = (ju+jl)/2;
+    if ((x >= v[jm]) == as)
+      jl=jm;
+    else
+      ju=jm;
+  }
+  if (x == v[0])
+    return 0;
+  else if (x == v[n-1])
+    return n-2;
+  else
+    return jl;
+}
+
+double getY(std:: vector<double> x, std:: vector<double> y,double xi){
+  int nn = x.size();                                                               
+  if(x[0]<x[nn-1]){                                                                                     
+    if(xi>x[nn-1]) return y[nn-1];
+    if(xi<x[0]) return y[0];
+  }      
+  else{                                                                                                            
+    if(xi<x[nn-1]) return y[nn-1];
+    if(xi>x[0]) return y[0];        
+  }                                    
+  int i = locate (x,xi);           
+  i = std::min (std::max (i,0), int (nn)-2);
+  double f=(xi-x[i])/(x[i+1]-x[i]);
+  if(i>1 && i<nn-2){
+    double a0,a1,a2,a3,f2;                                                       
+    f2 = f*f;                                                    
+    a0 = y[i+2] - y[i+1] - y[i-1] + y[i];            
+    a1 = y[i-1] - y[i] - a0;                                                                              
+    a2 = y[i+1] - y[i-1];                                                              
+    a3 = y[i];                                                                                     
+    return a0*f*f2+a1*f2+a2*f+a3;                                                    
+  }                                                                      
+  else return f*y[i+1]+(1-f)*y[i];           
+} 
+
 using namespace std;
 double epsilon = 8e-3;
 std:: string fepsilon = "change_epsilon.txt";
@@ -16,6 +62,9 @@ double average_redshift;
 
 double prec = 1e-10;
 std:: string fprec = "change_prec.txt";
+
+bool add_2halo = false;
+std:: string fadd_2halo = "add_2halo.txt";
 
 // int max_iter=10000000;
 // double tol = 1.e-1;
@@ -29,6 +78,8 @@ std:: string halo_bias_model;
 // min gal per bin - project like 300th
 double min_ngal_in_bin=10;
 std:: string fngal_in_bin = "ngals_in_bin.txt";
+
+std:: vector<double> rr, D2h;
 
 // these two variables contain the name of the CosmoBolognaLib
 // directory and the name of the current directory (useful when
@@ -62,12 +113,29 @@ vector<double> model_function2(const vector<double> x, const shared_ptr<void> mo
   double f_off = 0;
   double sigma_f_off = 1e-6;
   
-  nfwLens lens(&cosm, average_redshift, m200, c200, truncation_radius, f_off, sigma_f_off, true);
+  nfwLens lens(&cosm, average_redshift, m200, c200, truncation_radius, f_off, sigma_f_off, true, halo_bias_model);
   
   vector<double> model(x.size(), 0.);
-  for (size_t i = 0; i < x.size(); ++i)
-    // model[i] = lens.deltasigma(x[i]);
-    model[i] = lens.deltasigma_1h(x[i]);  
+  //if (add_2halo == false){
+  //  for (size_t i = 0; i < x.size(); ++i)
+  //    // model[i] = lens.deltasigma(x[i]);
+  //    model[i] = lens.deltasigma_1h(x[i]);
+  //}else{
+  //  for (size_t i = 0; i < x.size(); ++i)
+  //    // model[i] = lens.deltasigma(x[i]);
+  //    model[i] = lens.deltasigma_1h(x[i])+lens.deltasigma_2h(x[i]);   
+  //}
+
+  if(rr.size()>0){
+    double halo_bias = cosm.bias_halo(m200,average_redshift,halo_bias_model,"EisensteinHu");    
+    for (size_t i = 0; i < x.size(); ++i)
+      model[i] = lens.deltasigma_1h(x[i]) + halo_bias*getY(rr,D2h,x[i]);
+  }else{
+    for (size_t i = 0; i < x.size(); ++i)
+      model[i] = lens.deltasigma_1h(x[i]);
+  }
+
+  
   return model;
 }
 // =====================================================================
@@ -441,6 +509,16 @@ int main () {
       std:: cout << " new min_ngal_in_bin value = " << min_ngal_in_bin << std:: endl;
       ingal_in_bin.close();
     }
+    // add_2halo.txt
+    std:: ifstream ifadd_2halo;
+    ifadd_2halo.open(fadd_2halo.c_str());
+    if(ifadd_2halo.is_open()){
+      std:: cout << " add_2halo.txt exists! " << std:: endl;
+      add_2halo = true;
+      std:: cout << " add_2halo sets to true " << std:: endl;
+      ifadd_2halo.close();
+    }
+    
     std:: cout << " ...   checking EXTRA PARAMETER FILES ... ... ... " << std:: endl;    
     std:: cout << "    ... ... ... ... CHECK DONE ... ... ... ...    " << std:: endl;
     // *** DONE WITH CHECK *** //
@@ -659,6 +737,25 @@ int main () {
         std:: cout << " the average redshift of the clusters is " << average_redshift << std:: endl;
         std:: cout << " please provide a realistic value " << std:: endl;
         std::cin >> average_redshift;
+
+	// soon after it checks if there is a tabulated file for the 2halo term
+	std:: ostringstream osz;
+	osz << average_redshift;
+	std:: string sz;
+	sz = osz.str();
+	std:: string filin_table = "table_2h_model_z=" + sz + ".txt";
+	std:: ifstream ifilin_table;
+	ifilin_table.open(filin_table.c_str());
+	if(ifilin_table.is_open()){
+	  std:: cout << " table file for the 2halo term  exists: " << filin_table << std:: endl;
+	  std:: cout << " I read it!!! " << std:: endl;
+	  double ri, Di2h;
+	  while(ifilin_table >> ri >> Di2h){
+	    rr.push_back(ri);
+	    D2h.push_back(Di2h);	      
+	  }
+	  std:: cout << " the file containts " << rr.size() << " lines " << std:: endl;
+	}		
       }
       std::cout << " average_redshift = " <<  average_redshift << std::endl;
       std::cout << "  E(z_average) / E(0.35) = " << cosmology.HH(average_redshift) / cosmology.HH(0.35) << std::endl;
